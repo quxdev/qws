@@ -7,8 +7,8 @@
 ## Install
 1. install dependencies
 2. Add the following to your .env file
-    AWS_S3_ACCESS_KEY_ID = ""
-    AWS_S3_SECRET_ACCESS_KEY = ""
+    AWS_ACCESS_KEY_ID = ""
+    AWS_SECRET_ACCESS_KEY = ""
 
 ## Usage
 

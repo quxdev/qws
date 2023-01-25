@@ -17,15 +17,15 @@ class AWSEmail(object):
         self.message = None
         self.files = None
 
-        aws_ses_access_key_id = os.getenv("AWS_SES_ACCESS_KEY_ID")
-        aws_ses_secret_access_key = os.getenv("AWS_SES_SECRET_ACCESS_KEY")
-        aws_ses_region = os.getenv("AWS_SES_REGION")
+        aws_access_key_id = os.getenv("AWS_ACCESS_KEY_ID")
+        aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
+        aws_region = os.getenv("AWS_REGION")
 
         self.client = aws_client(
             service_name="ses",
-            region_name=aws_ses_region,
-            aws_access_key_id=aws_ses_access_key_id,
-            aws_secret_access_key=aws_ses_secret_access_key,
+            region_name=aws_region,
+            aws_access_key_id=aws_access_key_id,
+            aws_secret_access_key=aws_secret_access_key,
         )
 
     @staticmethod

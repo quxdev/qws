@@ -7,9 +7,9 @@
 ## Install
 1. install dependencies
 2. Add the following to your .env file
-    AWS_SES_ACCESS_KEY_ID = ""
-    AWS_SES_SECRET_ACCESS_KEY = ""
-    AWS_SES_REGION = ""
+    AWS_ACCESS_KEY_ID = ""
+    AWS_SECRET_ACCESS_KEY = ""
+    AWS_REGION = ""
 
 ## Usage
 
