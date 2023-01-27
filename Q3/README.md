@@ -1,7 +1,8 @@
 # Q3 - A Qux module for AWS S3
 
 ## Dependencies
-1. boto3
+1. s3fs
+2. pandas
 2. dotenv is required in your django project as it will access env variables
 
 ## Install
@@ -19,26 +20,34 @@ from QWS import Q3
 q3_obj = Q3()
 
 ```
-### List buckets => returns a list of bucket names ['bucket-1', 'bucket-2']
-```
-q3.list_buckets()
-```
-
 ### Upload File => returns True if success else None
 ```
-q3.upload_file(bucket_name, filename, path)
+fileurl = "s3://enine-test/mapping.csv"
+filepath = "/Users/psathaye/Downloads/mapping.csv"
+q3.upload_file(fileurl, filepath)
 ```
 
-### Upload File Object (binary) => returns True if success else None
+### Upload Dataframe => returns True if success else None
 ```
-q3.upload_fileobj(bucket_name, filename, data)
+fileurl = "S3://enine-test/mapping.csv"
+q3.upload_fileobj(fileurl, df)
 ```
 
-### List Files => list of dict [{'key': 'xyz', 'last_modified' : timestamp}, ...]
+### List Files => list of files : ['filename1', 'filename2', ...]
 ```
+bucket_name = "enine-test"
 filelist = q3.list(bucket_name, prefix="2022/01/")
 
 all_filelist = q3.list(bucket_name)
 ```
 
+### File Exists => check if file exists returns True or False
+```
+fileurl = "s3://enine-test/mapping.csv"
+q.exists(fileurl)
+```
 
+### get dataframe => returns dataframe for an S3 fileurl if success or None
+```
+fileurl = "s3://enine-test/mapping.csv"
+df = q.get_df(fileurl)
