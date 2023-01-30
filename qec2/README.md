@@ -6,7 +6,11 @@
 
 ## Install
 1. install dependencies
-2. Add the following to your .env file
+```
+pip install boto3
+```
+
+2. Add the following to your .env file.
     AWS_ACCESS_KEY_ID = ""
     AWS_SECRET_ACCESS_KEY = ""
     

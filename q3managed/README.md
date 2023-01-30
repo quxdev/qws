@@ -5,6 +5,17 @@
 django - for the data models
 q3 - for accessing S3
 ```
+## Install dependencies and create database models
+```
+pip install s3fs
+pip install pandas
+
+python manage.py migrate qws 
+
+Add the following to your .env file
+    AWS_S3_ACCESS_KEY_ID = ""
+    AWS_S3_SECRET_ACCESS_KEY = ""
+```
 
 ## Usage
 ```
@@ -48,8 +59,9 @@ df = q3m.exists(fileurl)
 
 ### Find Files => returns a list of dict [{'url' : 's3://enine-test/mapping.csv', 'report_name': 'test'}]
 ```
-fileurl = "s3://enine-test/mapping.csv"
-filelist = q3m.download_df(fileurl)
+prefix = "s3://enine-test"
+tags = {'report_id' : '1'}
+filelist = q3m.find(prefix, tags)
 ```
 
 ### Add Tags to existing files => returns True if success else None. Override existing tags or add new using the override param.
