@@ -17,8 +17,8 @@ class AWSEmail(object):
         self.message = None
         self.files = None
 
-        aws_access_key_id = os.getenv("AWS_ACCESS_KEY_ID")
-        aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
+        aws_access_key_id = os.getenv("AWS_SES_ACCESS_KEY_ID")
+        aws_secret_access_key = os.getenv("AWS_SES_SECRET_ACCESS_KEY")
         aws_region = os.getenv("AWS_REGION")
 
         self.client = aws_client(
@@ -108,8 +108,8 @@ def test_aws():
     filename = "/Users/psathaye/Downloads/mapping.csv"
 
     foo = AWSEmail()
-    foo.to = "parag@finmachines.com"
-    foo.cc = "parag@finmachines.net"
+    foo.to = "parag@enine.dev"
+    foo.cc = "parag@1e9advisors.com"
     foo.bcc = foo.cc
     foo.files = filename
     foo.subject = "TESTING QSES EMAIL"

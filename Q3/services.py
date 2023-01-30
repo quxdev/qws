@@ -10,27 +10,35 @@ class Q3:
     """
 
     def __init__(self):
-        aws_access_key_id = os.getenv("AWS_ACCESS_KEY_ID")
-        aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
+        aws_access_key_id = os.getenv("AWS_S3_ACCESS_KEY_ID")
+        aws_secret_access_key = os.getenv("AWS_S3_SECRET_ACCESS_KEY")
 
         self.fs = s3fs.S3FileSystem(
-            anon=False, key=aws_access_key_id, secret=aws_secret_access_key
+            anon=False,
+            key=aws_access_key_id,
+            secret=aws_secret_access_key,
         )
 
     def list(self, bucket, prefix=""):
         try:
-            files = [
-                self.fs.split_path(f)[1] for f in self.fs.find(bucket, prefix=prefix)
-            ]
+            files = ["s3://" + f for f in self.fs.find(bucket, prefix=prefix)]
             return files
         except Exception as e:
             print(e)
             return None
 
-    def get_df(self, fileurl):
+    def download_df(self, fileurl):
         try:
             df = pd.read_csv(fileurl)
             return df
+        except Exception as e:
+            print(e)
+            return None
+
+    def download_file(self, fileurl):
+        try:
+            with self.fs.open(fileurl, "rb") as f:
+                return f
         except Exception as e:
             print(e)
             return None
@@ -68,7 +76,8 @@ class Q3:
 
     def get_tags(self, fileurl):
         try:
-            return self.fs.get_tags(fileurl)
+            tags = self.fs.get_tags(fileurl)
+            return tags
         except Exception as e:
             print(e)
             return None

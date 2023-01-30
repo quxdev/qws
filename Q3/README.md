@@ -47,7 +47,28 @@ fileurl = "s3://enine-test/mapping.csv"
 q.exists(fileurl)
 ```
 
-### get dataframe => returns dataframe for an S3 fileurl if success or None
+### Download dataframe => returns dataframe for an S3 fileurl if success or None
 ```
 fileurl = "s3://enine-test/mapping.csv"
-df = q.get_df(fileurl)
+df = q.download_df(fileurl)
+```
+
+### Download file => returns file for an S3 fileurl if success or None
+```
+fileurl = "s3://enine-test/mapping.csv"
+df = q.download_file(fileurl)
+```
+
+### Add Tags => returns True if success else None. Tags are all strings.
+```
+fileurl = "s3://enine-test/mapping.csv"
+tags = {"report_name" : "settlement_report", "report_id" : "1234"}
+put_tags(fileurl, tags, override=True) => will delete all previous tags and then add
+put_tags(fileurl, tags, override=False) => will add new tags
+```
+
+### get tags for a fileurl => returns a dict
+```
+fileurl = "s3://enine-test/mapping.csv"
+tags = q.get_tags(fileurl)
+```
