@@ -83,12 +83,6 @@ prefix = "s3://enine-test"
 filelist = q3m.find_missingtags(prefix)
 ```
 
-### Find Files that are in the meta data model but not on S3 => returns a list of file urls
-```
-bucket_name = "enine-test"
-filelist = q3m.missing_s3(bucket_name)
-```
-
 ### Sync files from S3 to the data model - will add tags if found => returns True or None
 ```
 bucket_name = "enine-test"
@@ -97,6 +91,6 @@ status = q3m.sync(bucket_name)
 
 ### Bulk Tag upload => takes a data frame with columns [url, 'tagname1', 'tagname2', ...]. Returns True or None.
 ```
-df = pd.read_csv("Users/psathaye/Downloads/tagfile")
-status = q3m.bulk_tag_upload(df)
+path = "Users/psathaye/Downloads/tagfile"
+status = q3m.bulk_tag_upload(path, overwrite=False)
 ```

@@ -1,5 +1,7 @@
 from .models import Q3Object
 from ..q3.shared import Q3
+import os
+import pandas as pd
 
 
 class Q3Managed(object):
@@ -56,14 +58,14 @@ class Q3Managed(object):
     def exists(self, fileurl):
         return Q3Object.objects.filter(url=fileurl).exists()
 
-    def find(self, prefix="", tags_dict={}):
+    def find(self, prefix="", tags_dict={}, limit=1000):
         queryset = Q3Object.objects.filter(url__startswith=prefix)
         for key, value in tags_dict.items():
             queryset = queryset.filter(
                 tags_list__key_name=key, tags_list__key_value=value
             )
 
-        return [{"url": x.url, "tags": x.tags()} for x in queryset]
+        return [{"url": x.url, "tags": x.tags()} for x in queryset[:limit]]
 
     def find_missingtags(self, prefix):
         queryset = Q3Object.objects.filter(url__startswith=prefix)
@@ -89,34 +91,45 @@ class Q3Managed(object):
 
         return self.q.get_tags(bucket_name, filename)
 
-    def missing_s3(self, bucket_name):
-        urls = Q3Object.urls(bucket_name)
-        s3urls = self.q.list(bucket_name)
-        missing = list(set(urls).difference(set(s3urls)))
-        return missing
-
+    # add S3 objects that are missing in the model
     def sync(self, bucket_name):
-        urls = Q3Object.urls(bucket_name)
-        s3urls = self.q.list(bucket_name)
-        missing = set(s3urls).difference(set(urls))
         count = 0
-        for url in missing:
-            url_bucket, url_filename = self.split_fileurl(url)
+        page_iterator = self.q.get_list_page_iterator(bucket_name)
+        for page in page_iterator:
+            urllist = ["s3://" + bucket_name + "/" + x["Key"] for x in page["Contents"]]
+            objurls = Q3Object.objects.filter(url__in=urllist).values_list(
+                "url", flat=True
+            )
+            missing = list(set(urllist).difference(set(objurls)))
+            count = count + self.add_object(missing)
+        print(f"Synced Total {count} objects")
 
+    def add_object(self, urllist):
+        count = 0
+        for url in urllist:
+            url_bucket, url_filename = self.split_fileurl(url)
             qobj = Q3Object.objects.create(url=url)
             count = count + 1
             tags = self.q.get_tags(url_bucket, url_filename)
             if tags and qobj:
                 qobj.add_tags(tags)
-        print(f"Synced {count} objects")
-        return True
+        print(f"added {count} objects")
+        return count
 
-    def bulk_tag_upload(self, df, overwrite=True):
+    def bulk_tag_upload(self, path, overwrite=True):
+        if not os.path.exists(path):
+            return False
+
+        with pd.read_csv(path, chunksize=1000) as reader:
+            for df in reader:
+                self.upload_tags(df, overwrite)
+
+    def upload_tags(self, df, overwrite=True):
         count = 0
         for index, row in df.iterrows():
             t = {}
             for col in [x for x in df.columns if x != "url"]:
-                t[col] = str(row[col]) if col != "url" else None
+                t[col] = str(row[col])
 
             bucket_name, filename = self.split_fileurl(row["url"])
 

@@ -31,7 +31,6 @@ class Q3:
             return None
 
     def list(self, bucket_name, prefix=""):
-
         try:
             if prefix and prefix > "":
                 response = self.client.list_objects_v2(
@@ -68,7 +67,6 @@ class Q3:
             return None
 
     def upload_file(self, bucket_name, filename, filepath):
-
         if os.path.exists(filepath) is False:
             print(f"File not found: {filepath}")
             return None
@@ -93,7 +91,6 @@ class Q3:
             return None
 
     def upload_df(self, bucket_name, filename, df):
-
         if df.shape[0] == 0:
             print("DataFrame is empty")
             return None
@@ -124,3 +121,13 @@ class Q3:
         except Exception as e:
             print(e)
             return None
+
+    def get_list_page_iterator(self, bucket_name, prefix="", pagesize=1000):
+        params = {
+            "Bucket": bucket_name,
+            "Prefix": prefix,
+            "PaginationConfig": {"PageSize": pagesize},
+        }
+        paginator = self.client.get_paginator("list_objects_v2")
+        page_iterator = paginator.paginate(**params)
+        return page_iterator

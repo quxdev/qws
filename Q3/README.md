@@ -93,3 +93,13 @@ bucket_name = 'enine-test'
 filename = 'mapping.csv'
 tags = q.get_tags(bucket_name, filename)
 ```
+
+### get list page iterator => return a page iterator for getting a list of objects for a given bucket
+```
+bucket_name = 'enine-test'
+prefix = '2022/01'
+pagesize = 1000
+page_iterator = q.get_list_page_iterator(bucket_name, prefix, pagesize)
+for page in page_iterator:
+    print(page["Contents"])
+```
