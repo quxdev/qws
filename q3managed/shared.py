@@ -9,9 +9,9 @@ class Q3Managed(object):
     # returns bucket_name and key
     def split_fileurl(self, fileurl):
         l = fileurl.replace("s3://", "").split("/")
-        if len(l) != 2:
+        if len(l) < 2:
             return None, None
-        return l[0], l[1]
+        return l[0], "/".join(l[1:])
 
     def upload_file(self, fileurl, filepath, tags_dict={}):
         bucket_name, filename = self.split_fileurl(fileurl)
