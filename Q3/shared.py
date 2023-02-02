@@ -105,7 +105,10 @@ class Q3:
                 existing_tags = self.get_tags(bucket_name, filename)
                 if existing_tags is not None:
                     tags_dict = {**existing_tags, **tags_dict}
-            tags = [{"Key": k, "Value": v} for k, v in tags_dict.items()]
+            tags = [
+                {"Key": k, "Value": self.clean_tag_value(v)}
+                for k, v in tags_dict.items()
+            ]
             self.client.put_object_tagging(
                 Bucket=bucket_name, Key=filename, Tagging={"TagSet": tags}
             )
@@ -113,6 +116,21 @@ class Q3:
         except Exception as e:
             print(e)
             return None
+
+    def clean_tag_value(self, tag_value):
+        tag = "".join(filter(self.handle_special_chars, tag_value))
+        return tag
+
+    def handle_special_chars(self, char):
+        allowed_special_chars = ["_", ".", "/", "=", "+", "-", " "]
+        if char.isalnum() or char in allowed_special_chars:
+            return char
+        return ""
+
+    # Driver code
+    # special_string = "ERCOT & System Operating Limit (SOL) Methodology"
+    # tag = "".join(filter(handle_special_chars, special_string))
+    # print(tag)
 
     def get_tags(self, bucket_name, filename):
         try:

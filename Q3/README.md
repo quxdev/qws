@@ -77,6 +77,7 @@ q3.upload_df(bucket_name, filename, df)
 ```
 
 ### Add Tags => returns True if success else None. Tags are all strings.
+The tag values will be cleaned to remove characters that are not allowed in the tag as per AWS. Tag keys are expected to be clean.
 ```
 tags = {"report_name" : "settlement_report", "report_id" : "1234"}
 bucket_name = 'enine-test'
