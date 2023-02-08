@@ -2,6 +2,7 @@ import boto3
 import os
 import pandas as pd
 from io import BytesIO
+import zipfile
 
 
 class Q3:
@@ -51,6 +52,8 @@ class Q3:
         try:
             self.client.download_fileobj(bucket_name, filename, buffer)
             buffer.seek(0)
+            if filename.endswith(".zip"):
+                return self.zip_to_df(buffer)
             return pd.read_csv(buffer)
         except Exception as e:
             print(e)
@@ -164,3 +167,12 @@ class Q3:
         except Exception as e:
             print(e)
             return None
+
+    def zip_to_df(self, buffer):
+        result = []
+        zip_files = zipfile.ZipFile(buffer)
+        zip_list = zip_files.infolist()
+        for file in zip_list:
+            result.append(zip_files.open(file))
+
+        return pd.concat([pd.read_csv(f) for f in result])

@@ -39,7 +39,7 @@ df = pd.read_csv(filepath)
 status = q3m.upload_file(fileurl, df, tags_dict)
 ```
 
-### Download DF => returns dataframe if success else None
+### Download DF => returns dataframe if success else None. Will convert zip file to a dataframe as well.
 ```
 fileurl = "s3://enine-test/mapping.csv"
 df = q3m.download_df(fileurl)
