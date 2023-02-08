@@ -139,3 +139,19 @@ class Q3Managed(object):
                 count = count + 1
         print(f"Added tags to {count} url objects")
         return True
+
+    def move(self, from_url, to_url):
+        if from_url == to_url:
+            return None
+
+        old_bucket, from_prefix = self.split_fileurl(from_url)
+        new_bucket, to_prefix = self.split_fileurl(to_url)
+
+        qo = Q3Object.objects.get(url=from_url)
+        if qo:
+            if self.q.move(old_bucket, from_prefix, new_bucket, to_prefix):
+                qo.url = qo.url = to_url
+                qo.save()
+                print(f"Updated {from_prefix} to {to_prefix} objects")
+                return True
+        return None

@@ -149,3 +149,18 @@ class Q3:
         paginator = self.client.get_paginator("list_objects_v2")
         page_iterator = paginator.paginate(**params)
         return page_iterator
+
+    def move(self, from_bucket, from_key, to_bucket, to_key):
+        try:
+            copy_source = {
+                "Bucket": from_bucket,
+                "Key": from_key,
+            }
+            self.client.copy_object(
+                Bucket=to_bucket, Key=to_key, CopySource=copy_source
+            )
+            self.client.delete_object(Bucket=from_bucket, Key=from_key)
+            return True
+        except Exception as e:
+            print(e)
+            return None

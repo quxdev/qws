@@ -94,3 +94,11 @@ status = q3m.sync(bucket_name)
 path = "Users/psathaye/Downloads/tagfile"
 status = q3m.bulk_tag_upload(path, overwrite=False)
 ```
+
+### Move => move an S3 object returns True or None
+```
+from_url = "s3://enine-test/2022/testzip.zip"
+to_url = "s3://enine-test/2023/testzip.zip"
+
+q3m.move(from_url, to_url)
+```

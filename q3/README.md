@@ -104,3 +104,14 @@ page_iterator = q.get_list_page_iterator(bucket_name, prefix, pagesize)
 for page in page_iterator:
     print(page["Contents"])
 ```
+
+### move object 
+```
+from_bucket = 'enine-test'
+from_prefix = 'testfile.zip'
+
+to_bucket = 'enine-test'
+to_prefix = '2022/testfile.zip'
+
+q.move(from_bucket, from_prefix, to_bucket, to_prefix)
+```
