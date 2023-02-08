@@ -54,7 +54,9 @@ class Q3:
             buffer.seek(0)
             if filename.endswith(".zip"):
                 return self.zip_to_df(buffer)
-            return pd.read_csv(buffer)
+            elif filename.endswith(".csv"):
+                return pd.read_csv(buffer)
+            return pd.DataFrame()
         except Exception as e:
             print(e)
             return None
