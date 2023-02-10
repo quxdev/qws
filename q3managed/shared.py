@@ -2,6 +2,8 @@ from .models import Q3Object
 from ..q3.shared import Q3
 import os
 import pandas as pd
+from concurrent import futures
+from concurrent.futures import ThreadPoolExecutor
 
 
 class Q3Managed(object):
@@ -155,3 +157,18 @@ class Q3Managed(object):
                 print(f"Updated {from_prefix} to {to_prefix} objects")
                 return True
         return None
+
+    def download_df_multiple(self, files):
+        with ThreadPoolExecutor(max_workers=8) as executor:
+            future_to_key = {
+                executor.submit(self.download_df, file): file for file in files
+            }
+
+            for future in futures.as_completed(future_to_key):
+                key = future_to_key[future]
+                exception = future.exception()
+
+                if not exception:
+                    yield key, future.result()
+                else:
+                    yield key, exception

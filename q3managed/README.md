@@ -102,3 +102,13 @@ to_url = "s3://enine-test/2023/testzip.zip"
 
 q3m.move(from_url, to_url)
 ```
+### Download multiple files as df from S3. Downloads files in parallel for fast processing.
+```
+results = []
+files = qm.find("s3://enine-test/test")
+for key, result in qm.download_df_multiple(files):
+    print(f"Downloaded {key}")
+    results.append(result)
+df = pd.concat(results)
+print(f"Downloaded {len(results)} files")
+return df
