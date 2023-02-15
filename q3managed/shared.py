@@ -149,13 +149,10 @@ class Q3Managed(object):
         old_bucket, from_prefix = self.split_fileurl(from_url)
         new_bucket, to_prefix = self.split_fileurl(to_url)
 
-        qo = Q3Object.objects.get(url=from_url)
-        if qo:
-            if self.q.move(old_bucket, from_prefix, new_bucket, to_prefix):
-                qo.url = qo.url = to_url
-                qo.save()
-                print(f"Updated {from_prefix} to {to_prefix} objects")
-                return True
+        if self.q.move(old_bucket, from_prefix, new_bucket, to_prefix):
+            Q3Object.objects.update_or_create(url=from_url, defaults={"url": to_url})
+            print(f"Updated {from_prefix} to {to_prefix} objects")
+            return True
         return None
 
     def download_df_multiple(self, files):
