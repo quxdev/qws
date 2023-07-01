@@ -1,10 +1,9 @@
 import os
-
-
-from boto3 import client as aws_client
+from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from email.mime.application import MIMEApplication
+
+from boto3 import client as aws_client
 
 
 class AWSEmail(object):
