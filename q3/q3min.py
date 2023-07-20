@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 import boto3
+import botocore
 from io import BytesIO
 import gzip
 
@@ -24,7 +25,7 @@ class S3path:
         if len(args) == 1:
             path = args[0]
             self.path = path
-            self.bucket, *filekeys = path.strip("s3://").split("/")
+            self.bucket, *filekeys = path.replace("s3://", "").split("/")
             self.key = "/".join(filekeys)
         elif len(args) == 2:
             bucket, key = args
@@ -55,13 +56,13 @@ class Q3:
             return [S3path(path.bucket, x["Key"]) for x in response["Contents"]]
         except Exception as e:
             print(e)
-            return None
+            return []
 
     def exists(self, path: S3path) -> bool:
         try:
             self.config.client.head_object(Bucket=path.bucket, Key=path.key)
             return True
-        except boto3.botocore.exceptions.ClientError:
+        except botocore.exceptions.ClientError:
             return False
 
     def download(self, path: S3path) -> BytesIO:
