@@ -8,7 +8,7 @@ from boto3 import client as aws_client
 
 class AWSEmail(object):
     def __init__(self):
-        self.sender = "raptor@finmachines.net"
+        self.sender = "qux@quxdev.com"
         self.to = None
         self.cc = None
         self.bcc = None
@@ -16,15 +16,20 @@ class AWSEmail(object):
         self.message = None
         self.files = None
 
-        aws_access_key_id = os.getenv("AWS_SES_ACCESS_KEY_ID")
-        aws_secret_access_key = os.getenv("AWS_SES_SECRET_ACCESS_KEY")
-        aws_region = os.getenv("AWS_REGION")
+        access_key = os.getenv("AWS_SES_ACCESS_KEY", None)
+        secret_key = os.getenv("AWS_SES_SECRET_KEY", None)
+        aws_region = os.getenv("AWS_SES_REGION", "us-east-1")
+
+        # Backwards compatibility for old ENV variables
+        access_key = os.getenv("AWS_SES_ACCESS_KEY_ID", access_key)
+        secret_key = os.getenv("AWS_SES_SECRET_ACCESS_KEY", secret_key)
+        aws_region = os.getenv("AWS_REGION", aws_region)
 
         self.client = aws_client(
             service_name="ses",
             region_name=aws_region,
-            aws_access_key_id=aws_access_key_id,
-            aws_secret_access_key=aws_secret_access_key,
+            aws_access_key_id=access_key,
+            aws_secret_access_key=secret_key,
         )
 
     @staticmethod
@@ -104,15 +109,15 @@ class AWSEmail(object):
 
 
 def test_aws():
-    filename = "/Users/psathaye/Downloads/mapping.csv"
+    filename = "SPY.csv"
 
     foo = AWSEmail()
-    foo.to = "parag@enine.dev"
-    foo.cc = "parag@1e9advisors.com"
-    foo.bcc = foo.cc
+    foo.to = "qux@quxdev.com"
+    foo.cc = "abc@quxdev.com"
+    foo.bcc = "def@quxdev.com"
     foo.files = filename
-    foo.subject = "TESTING QSES EMAIL"
-    foo.message = "TESTING QSES EMAIL ..."
+    foo.subject = "RACECAR..."
+    foo.message = "...is a palindrome!"
     message, response = foo.send()
     print(message)
     print(response)
