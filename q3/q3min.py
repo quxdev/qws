@@ -3,12 +3,16 @@ import boto3
 import botocore
 from io import BytesIO
 import gzip
+import zipfile
+import os
 
 
 @dataclass(frozen=True)
 class S3Config:
     aws_access_key_id: str = None
     aws_secret_access_key: str = None
+    cache_active: bool = False
+    cache_dir: str = None
 
     @property
     def client(self):
@@ -18,6 +22,10 @@ class S3Config:
             aws_secret_access_key=self.aws_secret_access_key,
         )
         return client
+
+    @property
+    def cache_enabled(self):
+        return self.cache_active and self.cache_dir and os.path.exists(self.cache_dir)
 
 
 class S3path:
@@ -105,3 +113,84 @@ class Q3:
         except Exception as e:
             print(e)
             return None
+
+    # ------- new methods for q3min ------- with cache and zip support
+
+    def download_v2(self, spath: S3path) -> list:
+        path = os.path.join(self.config.cache_dir, spath.path.replace("s3://", ""))
+        results = self.__from_cache(path)
+        if results:
+            return results
+
+        buffer = self.download(spath)
+        if self.config.cache_enabled:
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            with open(path, "wb") as f:
+                f.write(buffer.read())
+                buffer.seek(0)
+
+        if spath.is_zip:
+            _results = self.__unzip(buffer)
+        else:
+            _results = [{"filename": spath.path, "fileobj": buffer}]
+
+        for r in _results:
+            r["from"] = "s3"
+            r["source"] = spath.path
+
+        return _results
+
+    def __from_cache(self, path: str) -> BytesIO:
+        if self.config.cache_enabled and os.path.exists(path):
+            with open(path, "rb") as f:
+                buffer = BytesIO(f.read())
+                buffer.seek(0)
+            if path.endswith("zip"):
+                results = self.__unzip(buffer)
+            else:
+                results = [{"filename": path, "fileobj": buffer}]
+
+            for r in results:
+                r["from"] = "cache"
+                r["source"] = path
+
+            return results
+
+        return None
+
+    def __unzip(self, file):
+        results = []
+        result = {}
+        with zipfile.ZipFile(file) as zfile:
+            for f in zfile.infolist():
+                zf = zfile.open(f.filename)
+                if zipfile.is_zipfile(zf):
+                    _results = self.__unzip(zf)
+                    results.extend(_results)
+                else:
+                    buffer = BytesIO(zfile.open(f.filename).read())
+                    if len(buffer.getvalue()) > 0:
+                        result["filename"] = f.filename
+                        result["fileobj"] = buffer
+                        results.append(result.copy())
+
+        return results
+
+    def list_cache(self, path: S3path) -> list:
+        result = []
+        if self.config.cache_enabled:
+            path = os.path.join(self.config.cache_dir, path.path.replace("s3://", ""))
+            dirname = os.path.dirname(path)
+            if os.path.exists(path):
+                for root, _, files in os.walk(dirname):
+                    result.extend([os.path.join(root, f) for f in files])
+
+        return result
+
+    def exists_in_cache(self, path: S3path) -> bool:
+        result = False
+        if self.config.cache_enabled:
+            path = os.path.join(self.config.cache_dir, path.path.replace("s3://", ""))
+            result = os.path.exists(path)
+
+        return result

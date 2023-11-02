@@ -24,6 +24,16 @@ from QWS.q3.q3min  import S3config, S3path, Q3
 access_key = ""
 secret_key = ""
 config = S3config(access_key, secret_key)
+
+# You can pass additional parameters to config for enabling cache and providing a cache directory
+# The cache directory should exist and will not be created by QWS
+cache_active = True
+cache_dir = "data/cache"
+config = S3config(access_key, secret_key, cache_active, cache_dir)
+
+#User the following to check if cache is enabled
+config.cache_enabled   => returns True or False
+
 ```
 ### create S3Path
 ```
@@ -76,3 +86,28 @@ q3.upload(spath, buffer) => returns True if successful
 
 ```
 
+## New Methods for cache and zip support
+
+#### check if file exists in cache
+
+```
+q3.exists_in_cache(s3path) => returns True if file exists on s3 else False
+```
+
+#### list files in cache for a given s3path => returns a list of cached files
+```
+filelist = q3.list_cache(s3path)
+for f in filelist:
+    print(f)   => full path of the file
+```
+
+#### download file with cache first strategy: 
+#### cache first strategy: Will return file from cache if found, else fetch from s3, save in cache and return
+```
+results = q3.download_v2(s3path) => return BytesIO
+# results = [{"filename": <filename>, "fileobj": <bytesIO buffer>, "from": "cache|s3", "source": <full path>"}, ...]
+for r in results:
+    df = pd.read_csv(r["fileobj"])
+    print(r["filename"], r["from"], r["source"])
+    print(df)
+```
