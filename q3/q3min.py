@@ -207,9 +207,14 @@ class Q3:
 
         print("success: ", success)
         if success and self.config.cache_enabled:
-            path = os.path.join(self.config.cache_dir, path.path.replace("s3://", ""))
-            os.makedirs(os.path.dirname(path), exist_ok=True)
-            with open(path, "wb") as f:
-                f.write(data.getvalue())
+            localpath = os.path.join(
+                self.config.cache_dir, path.path.replace("s3://", "")
+            )
+            os.makedirs(os.path.dirname(localpath), exist_ok=True)
+            with open(localpath, "wb") as f:
+                if path.is_gzip:
+                    f.write(gzip.compress(data.getvalue()))
+                else:
+                    f.write(data.getvalue())
 
         return success

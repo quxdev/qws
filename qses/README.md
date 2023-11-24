@@ -21,6 +21,10 @@ Add the following to your .env file
 - `AWS_SES_SECRET_KEY` (_AWS Secret Access Key_)
 - `AWS_SES_REGION` (_AWS Region_)
 
+The SAFE_MODE if set to True will send all emails to email ids listed in SAFE_MODE_TO only
+- `SAFE_MODE` (True or False) - default True
+- `SAFE_MODE_TO` (qux@quxdev.com,foo@quxdev.com)
+
 ## Usage
 
 ```
