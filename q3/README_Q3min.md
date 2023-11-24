@@ -111,3 +111,14 @@ for r in results:
     print(r["filename"], r["from"], r["source"])
     print(df)
 ```
+
+#### Upload file with cache first strategy
+This will store the file to cache after successful upload to S3
+```
+path = "/downloads/test.csv"
+buffer = BytesIO()
+pd.read_csv(path).to_csv(buffer)
+spath = S3path("enine-test", "parag/test.csv.gz")
+q3.upload_v2(spath, buffer) => returns True if successful
+
+```

@@ -1,10 +1,10 @@
 from dataclasses import dataclass
+from io import BytesIO
+import zipfile
+import gzip
+import os
 import boto3
 import botocore
-from io import BytesIO
-import gzip
-import zipfile
-import os
 
 
 @dataclass(frozen=True)
@@ -89,8 +89,8 @@ class Q3:
     def upload(self, path: S3path, data: BytesIO) -> bool:
         if path.is_gzip:
             return self.__upload_gzip(path, data)
-        else:
-            return self.__upload_file(path, data)
+
+        return self.__upload_file(path, data)
 
     def __upload_file(self, path: S3path, data: BytesIO) -> bool:
         try:
@@ -119,6 +119,7 @@ class Q3:
     def download_v2(self, spath: S3path) -> list:
         path = os.path.join(self.config.cache_dir, spath.path.replace("s3://", ""))
         results = self.__from_cache(path)
+        print(f"results from cache: {results}")
         if results:
             return results
 
@@ -126,7 +127,10 @@ class Q3:
         if self.config.cache_enabled:
             os.makedirs(os.path.dirname(path), exist_ok=True)
             with open(path, "wb") as f:
-                f.write(buffer.read())
+                if spath.is_gzip:
+                    f.write(gzip.compress(buffer.read()))
+                else:
+                    f.write(buffer.read())
                 buffer.seek(0)
 
         if spath.is_zip:
@@ -168,12 +172,15 @@ class Q3:
                     _results = self.__unzip(zf)
                     results.extend(_results)
                 else:
-                    buffer = BytesIO(zfile.open(f.filename).read())
+                    zf = zfile.open(f.filename)
+                    buffer = BytesIO(zf.read())
+                    buffer.seek(0)
                     if len(buffer.getvalue()) > 0:
                         result["filename"] = f.filename
                         result["fileobj"] = buffer
                         results.append(result.copy())
 
+        print(f"unzipped: {results}")
         return results
 
     def list_cache(self, path: S3path) -> list:
@@ -194,3 +201,15 @@ class Q3:
             result = os.path.exists(path)
 
         return result
+
+    def upload_v2(self, path: S3path, data: BytesIO) -> bool:
+        success = self.upload(path, BytesIO(data.getvalue()))
+
+        print("success: ", success)
+        if success and self.config.cache_enabled:
+            path = os.path.join(self.config.cache_dir, path.path.replace("s3://", ""))
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            with open(path, "wb") as f:
+                f.write(data.getvalue())
+
+        return success
