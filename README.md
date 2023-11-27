@@ -23,3 +23,7 @@ Wrapper for AWS S3 that (a) uses boto3, (b) handles gzip files, and (c) does not
 ## qec2
 
 > Helpful class and functions to manage ec2 instance in a given region
+
+## qsecret
+
+> Helpful class and functions to access aws secret manager keys in a given region
