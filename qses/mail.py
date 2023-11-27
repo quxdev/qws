@@ -15,8 +15,9 @@ class AWSEmail:
         self.subject = None
         self.message = None
         self.files = None
-        self.client = None
+        self.client = self.set_client()
 
+    def set_client(self):
         access_key = os.getenv("AWS_SES_ACCESS_KEY", None)
         secret_key = os.getenv("AWS_SES_SECRET_KEY", None)
         aws_region = os.getenv("AWS_SES_REGION", "us-east-1")
@@ -26,13 +27,16 @@ class AWSEmail:
         secret_key = os.getenv("AWS_SES_SECRET_ACCESS_KEY", secret_key)
         aws_region = os.getenv("AWS_REGION", aws_region)
 
-        if access_key is not None and secret_key is not None:
-            self.client = aws_client(
+        if access_key and secret_key:
+            client = aws_client(
                 service_name="ses",
                 region_name=aws_region,
                 aws_access_key_id=access_key,
                 aws_secret_access_key=secret_key,
             )
+            return client
+
+        return None
 
     @staticmethod
     def destination_header(value):
@@ -67,8 +71,14 @@ class AWSEmail:
         return part
 
     def send(self):
-        if any([self.client, self.subject, self.message, self.to]) is None:
-            return None, None
+        if not any([self.client, self.subject, self.message, self.to]):
+            print("Missing one or more of the following: client, subject, message, to")
+            print(f"client : {self.client}")
+            print(f"subject: {self.subject}")
+            print(f"message: {self.message}")
+            print(f"to     : {self.to}")
+
+            return False
 
         message = MIMEMultipart()
 
@@ -81,10 +91,11 @@ class AWSEmail:
         message["Cc"] = cc
         message["Bcc"] = bcc
 
-        print(f"message == {message}")
-
         if not message["To"]:
-            return None, None
+            print(f"Missing To: {message['To']}")
+            print(f"SAFE_MODE: {os.getenv('SAFE_MODE', 'True')}")
+            print(f"SAFE_MODE_TO: {os.getenv('SAFE_MODE_TO', None)}")
+            return False
 
         part = MIMEText(self.message, "html", "utf-8")
         message.attach(part)
@@ -101,13 +112,24 @@ class AWSEmail:
                     print(f"Cannot attach file:{file}")
 
         rawmessage = {"Data": message.as_string()}
-        print(f"rawmessage == {rawmessage}")
+
         response = self.client.send_raw_email(
             Destinations=self.destination_aslist(to, cc, bcc),
             Source=self.sender,
             RawMessage=rawmessage,
         )
-        return message, response
+
+        if (
+            response
+            and response["ResponseMetadata"]
+            and response["ResponseMetadata"]["HTTPStatusCode"] != 200
+        ):
+            print(
+                f"Failed to send email: status={response['ResponseMetadata']['HTTPStatusCode']}"
+            )
+            return False
+
+        return True
 
     def set_receipients(self, to, cc, bcc):
         safe_mode = os.getenv("SAFE_MODE", "True").lower() == "true"
@@ -124,22 +146,30 @@ class AWSEmail:
         if safe_mode_args:
             recepient_to = self.destination_header(safe_mode_args)
 
+        print(f"SAFE_MODE: {safe_mode}")
+        print(f"SAFE_MODE_TO: {safe_mode_args}")
+        print(f"recepient_to: {recepient_to}")
+        print(f"recepient_cc: {recepient_cc}")
+        print(f"recepient_bcc: {recepient_bcc}")
+
         return recepient_to, recepient_cc, recepient_bcc
 
 
 def main():
-    filename = "SPY.csv"
+    from dotenv import load_dotenv
+
+    load_dotenv()
 
     testemail = AWSEmail()
+    testemail.sender = "noreply@batteryos.com"
     testemail.to = "qux@quxdev.com"
     testemail.cc = "abc@quxdev.com"
     testemail.bcc = "def@quxdev.com"
-    testemail.files = filename
     testemail.subject = "RACECAR..."
     testemail.message = "...is a palindrome!"
-    message, response = testemail.send()
-    print(message)
-    print(response)
+    response = testemail.send()
+
+    print(f"message sent: {response}")
 
 
 if __name__ == "__main__":

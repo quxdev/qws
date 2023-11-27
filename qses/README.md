@@ -41,7 +41,7 @@ foo.subject = "TESTING QSES EMAIL"
 
 foo.message = "TESTING QSES EMAIL ..."
 
-message, response = foo.send()
+response = foo.send()
 print(message)
 print(response)
 ```
