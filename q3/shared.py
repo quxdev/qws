@@ -1,8 +1,8 @@
-import boto3
-import os
-import pandas as pd
 from io import BytesIO
+import os
 import zipfile
+import boto3
+import pandas as pd
 
 
 class Q3:
@@ -54,8 +54,10 @@ class Q3:
             buffer.seek(0)
             if filename.endswith(".zip"):
                 return self.zip_to_df(buffer)
-            elif filename.endswith(".csv"):
+
+            if filename.endswith(".csv"):
                 return pd.read_csv(buffer)
+
             return pd.DataFrame()
         except Exception as e:
             print(e)
