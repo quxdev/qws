@@ -152,7 +152,7 @@ class Q3:
             if path.endswith("zip"):
                 results = self.__unzip(buffer)
             else:
-                if path.is_gzip:
+                if path.endswith("gz"):
                     decompressed_data = gzip.decompress(buffer.read())
                     buffer = BytesIO(decompressed_data)
                     buffer.seek(0)
