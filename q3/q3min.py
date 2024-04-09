@@ -152,6 +152,10 @@ class Q3:
             if path.endswith("zip"):
                 results = self.__unzip(buffer)
             else:
+                if path.is_gzip:
+                    decompressed_data = gzip.decompress(buffer.read())
+                    buffer = BytesIO(decompressed_data)
+                    buffer.seek(0)
                 results = [{"filename": path, "fileobj": buffer}]
 
             for r in results:
@@ -175,6 +179,10 @@ class Q3:
                     zf = zfile.open(f.filename)
                     buffer = BytesIO(zf.read())
                     buffer.seek(0)
+                    if f.filename.endswith(".gz"):
+                        decompressed_data = gzip.decompress(buffer.read())
+                        buffer = BytesIO(decompressed_data)
+                        buffer.seek(0)
                     if len(buffer.getvalue()) > 0:
                         result["filename"] = f.filename
                         result["fileobj"] = buffer

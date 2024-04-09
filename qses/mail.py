@@ -142,8 +142,7 @@ class AWSEmail:
             recepient_to = self.destination_header(to)
             recepient_cc = self.destination_header(cc)
             recepient_bcc = self.destination_header(bcc)
-
-        if safe_mode_args:
+        elif safe_mode_args:
             recepient_to = self.destination_header(safe_mode_args)
 
         print(f"SAFE_MODE: {safe_mode}")
