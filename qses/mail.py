@@ -27,16 +27,13 @@ class AWSEmail:
         secret_key = os.getenv("AWS_SES_SECRET_ACCESS_KEY", secret_key)
         aws_region = os.getenv("AWS_REGION", aws_region)
 
-        if access_key and secret_key:
-            client = aws_client(
-                service_name="ses",
-                region_name=aws_region,
-                aws_access_key_id=access_key,
-                aws_secret_access_key=secret_key,
-            )
-            return client
-
-        return None
+        client = aws_client(
+            service_name="ses",
+            region_name=aws_region,
+            aws_access_key_id=access_key,
+            aws_secret_access_key=secret_key,
+        )
+        return client
 
     @staticmethod
     def destination_header(value):
